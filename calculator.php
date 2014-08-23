@@ -239,7 +239,7 @@ class Validator
 	// 入力されたレアリティが実在するかを検証する関数
 	public function rarity($value)
 	{
-		$value = false;
+		$result = false;
 		
 		if ($value === 'N') {
 			$result = true;
