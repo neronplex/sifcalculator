@@ -83,7 +83,6 @@ class Service
 	// バリデーションのエンドポイント
 	public function validation()
 	{
-		
 		try {
 			$this->executeVaridateRarity($this->rarity)->executeValidateIsplus($this->is_plus)->executeVaridateLv($this->lv);
 		} catch (Exception $e) {
