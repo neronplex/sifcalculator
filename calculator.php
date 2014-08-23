@@ -105,21 +105,21 @@ class Service
 	// 入力されたレアリティに関するバリデーションの手続き関数
 	private function executeVaridateRarity($rarity)
 	{
-		$this->validator->validateEmpty($rarity)->validateString($rarity)->validateRarity($rarity);
+		$this->validator->isEmpty($rarity)->string($rarity)->rarity($rarity);
 		return $this;
 	}
 	
 	// 覚醒フラグに関するバリデーションの手続き関数
 	private function executeValidateIsplus($isplus)
 	{
-		$this->validator->validateEmpty($isplus)->validateString($isplus);
+		$this->validator->isEmpty($isplus)->string($isplus);
 		return $this;
 	}
 	
 	// 入力されたレベルに関するバリデーションの手続き関数
 	private function executeVaridateLv($lv)
 	{
-		$this->validator->validateEmpty($lv)->validateNum($lv, '1', '3')->validateLvZero($lv);
+		$this->validator->isEmpty($lv)->num($lv, '1', '3')->isZero($lv);
 		return $this;
 	}
 	
@@ -159,7 +159,7 @@ class Service
 	}
 	
 	// データベースから取り出した関数を都合よく再構築する関数
-	private function arrayRebuilder(array $array)
+	private function arrayRebuilder($array)
 	{
 		foreach ($array as $values) {
 			$lv = $values['lv'];
@@ -173,7 +173,7 @@ class Service
 	}
 	
 	// 実際に経験値を計算する関数
-	private function executeCalc(array $tables, $lv)
+	private function executeCalc($tables, $lv)
 	{
 		if ($this->status === 'dberror') {
 			return;
@@ -196,7 +196,7 @@ class Service
 class Validator
 {
 	// 変数が空かを検証する関数
-	public function validateEmpty($var) 
+	public function isEmpty($var) 
 	{
 		if (empty($var)) {
 			throw new Exception();
@@ -206,7 +206,7 @@ class Validator
 	}
 	
 	// 値が文字列か否かを検証する関数
-	public function validateString($value)
+	public function string($value)
 	{
 		if (!(is_string($value))) {
 			throw new Exception();
@@ -216,7 +216,7 @@ class Validator
 	}
 	
 	// 値が論理値か否かを検証する関数
-	public function validateBoolean($value)
+	public function boolean($value)
 	{
 		if (!(is_bool($value))) {
 			throw new Exception();
@@ -226,7 +226,7 @@ class Validator
 	}
 	
 	// 入力されたレベルが半角数字かを検証する関数
-	public function validateNum($value, $min, $max)
+	public function num($value, $min, $max)
 	{
 		if (!(preg_match("/^\d{" . "$min,$max" . "}$/", $value))) {
 			throw new Exception();
@@ -236,8 +236,10 @@ class Validator
 	}
 	
 	// 入力されたレアリティが実在するかを検証する関数
-	public function validateRarity($value)
+	public function rarity($value)
 	{
+		$value = false;
+		
 		if ($value === 'N') {
 			$result = true;
 		}
@@ -261,8 +263,8 @@ class Validator
 		return $this;
 	}
 	
-	// レベルに0が入力されていないかを検証する関数
-	public function validateLvZero($value)
+	// 0が入力されていないかを検証する関数
+	public function isZero($value)
 	{
 		if ($value === '0') {
 			throw new Exception();
