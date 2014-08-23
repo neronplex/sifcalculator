@@ -29,7 +29,8 @@ class Controller
 	}
 	
 	// ViewへJSONを出力する関数
-	public function echoJSON() {
+	public function echoJSON()
+	{
 		header('Content-Type:text/javascript; charset=UTF-8');
 		echo json_encode([
 				'status' => $this->service->status,
