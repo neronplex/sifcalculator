@@ -48,9 +48,11 @@ class Service
 	private $is_plus = null;
 	# 計算を開始するレベル
 	private $lv = null;
+	# 次のレベルまでの経験値
+	private $next_lv_exp = null;
 	
 	# 経験値テーブル
-	private $exp_tables = array();
+	private $exp_tables = array(null);
 	# 計算の完了した経験値を格納
 	private $exp = null;
 	
@@ -77,6 +79,7 @@ class Service
 		$this->rarity = $POST['rarity'];
 		$this->is_plus = $POST['isplus'];
 		$this->lv = $POST['lv'];
+		$this->next_lv_exp = $POST['next_lv_exp'];
 		
 		return $this;
 	}
@@ -85,7 +88,10 @@ class Service
 	public function validation()
 	{
 		try {
-			$this->executeVaridateRarity($this->rarity)->executeValidateIsplus($this->is_plus)->executeVaridateLv($this->lv);
+			$this->executeVaridateRarity($this->rarity)
+			->executeValidateIsplus($this->is_plus)
+			->executeVaridateLv($this->lv)
+			->executeVaridateNLE($this->next_lv_exp);
 		} catch (Exception $e) {
 			$this->status = 'invalid';
 		}
@@ -99,7 +105,10 @@ class Service
 		if ($this->status === 'invalid') {
 			return; 
 		} else {
-			$this->plusSelector($this->rarity, $this->is_plus)->expTableSelector($this->rarity)->arrayRebuilder($this->exp_tables)->executeCalc($this->exp_tables, $this->lv);
+			$this->plusSelector($this->rarity, $this->is_plus)
+			->expTableSelector($this->rarity)
+			->arrayRebuilder($this->exp_tables)
+			->executeCalc($this->exp_tables, $this->lv);
 		}
 	}
 	
@@ -121,6 +130,13 @@ class Service
 	private function executeVaridateLv($lv)
 	{
 		$this->validator->isEmpty($lv)->num($lv, '1', '3')->isZero($lv);
+		return $this;
+	}
+	
+	// 入力された次のレベルまでの経験値に関するバリデーションの手続き関数
+	private function executeVaridateNLE($next_lv_exp)
+	{
+		$this->validator->isEmpty($next_lv_exp)->num($next_lv_exp, '1', '4')->isZero($next_lv_exp);
 		return $this;
 	}
 	
@@ -186,10 +202,16 @@ class Service
 				$exp = $exp + $tables["$i"];
 			}
 			
-			$this->status = 'success';
-			$this->exp = $exp;
+			$exist_exp = $tables["$lv"] - $this->next_lv_exp;
+			
+			if ($exist_exp < 0) {
+				$this->status = 'invalid';
+			} else {
+				$this->status = 'success';
+				$this->exp = $exp - $exist_exp;
+			}
 		}
-
+		
 		return $this;
 	}
 }
@@ -226,7 +248,7 @@ class Validator
 		return $this;
 	}
 	
-	// 入力されたレベルが半角数字かを検証する関数
+	// 入力された数字が半角数字かを検証する関数
 	public function num($value, $min, $max)
 	{
 		if (!(preg_match("/^\d{" . "$min,$max" . "}$/", $value))) {
